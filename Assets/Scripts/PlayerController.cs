@@ -6,91 +6,113 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    private Animator anim;
+    //private Animator anim;
     private CharacterController cc;
-    private const float Gravity = -9.81f;
+    [Header("角色模型")]
+    public Transform characterTransform;
     [Header("基础控制")]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float spritingSpeed;
+    [SerializeField] private float crouchSpeed;
     [SerializeField] private float jumpHeight;
     [SerializeField] private float fallSpeed;//落地速度
-    [SerializeField] private int jumpTimes = 2;
-    private float currentSpeed;
-    public Transform cam;
-    private float turnSmoothTime = 0.1f;
-    private float turnSmoothVelocity;
+    [SerializeField] private float crouchHeight;//下蹲后的高度
+    private float originHeight;//原始高度
+    private bool isCrouch;
+    [Header("脚底射线检测")]
+    [SerializeField] private float rayDis;
+    public Transform rayTransform;
+    private Vector3 moveDir;
+    [Header("当前移速")]
+    [SerializeField]private float currentSpeed;
 
-    private float gravity = -9.81f;
-    private Vector3 velocity;
-
-    [Header("地面检测")]
-    public Transform groundCheck1;
-    public Transform groundCheck2;
-    public float checkRange = 0.1f;
-    public LayerMask groundMask;
-    private bool isGround;
+    private float gravity = 9.81f;
 
 
     private void Start()
     {
-        cam = Camera.main.transform;
-        anim = GetComponent<Animator>();
+        //anim = GetComponent<Animator>();
         cc = GetComponent<CharacterController>();
-
+        originHeight = cc.height;
     }
 
     private void Update()
     {
-        isGround = Physics.CheckSphere(groundCheck1.position,checkRange,groundMask) || Physics.CheckSphere(groundCheck2.position, checkRange, groundMask);
-
-        if(isGround && velocity.y < 0)
+        if (isGrounded())
         {
-            jumpTimes = 2;
-            velocity.y = -1;
-            anim.SetBool("Jump",false);
+            //获取用户输入
+            float x = Input.GetAxisRaw("Horizontal");
+            float z = Input.GetAxisRaw("Vertical");
+            //移动的方向
+            moveDir = characterTransform.TransformDirection(new Vector3(x, 0, z));
+            //冲刺判定
+            if (isCrouch)
+            {
+                currentSpeed = crouchSpeed;
+            }
+            else
+            {
+                currentSpeed = Input.GetKey(KeyCode.LeftShift) ? spritingSpeed : moveSpeed;
+            }
+            //跳跃
+            if (Input.GetButtonDown("Jump"))
+            {
+                Jump();
+            }
+        }
+        else
+        {
+            //不在地面上时开始模拟重力下降
+            moveDir.y -= gravity * Time.deltaTime * fallSpeed;
         }
 
-        float x = Input.GetAxisRaw("Horizontal");
-        float z = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(x,0,z).normalized;
-        currentSpeed = Input.GetKey(KeyCode.LeftShift) ? spritingSpeed : moveSpeed;
-        //移动
-        if (direction.magnitude > 0.1f)
-        {
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;//获得旋转角度
+        //下蹲 不放在isGround()情况里是让在空中时也可以下蹲
+        Crouch();
 
-            //平滑旋转角色的朝向
-            float Angle = Mathf.SmoothDampAngle(transform.eulerAngles.y,targetAngle,ref turnSmoothVelocity,turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0,Angle,0);
-
-            Vector3 moveDir = Quaternion.Euler(0,targetAngle,0) * Vector3.forward;
-            cc.Move(moveDir.normalized * currentSpeed * Time.deltaTime);
-        }
-
-        if(Input.GetButtonDown("Jump") && isGround)
-        {
-            jumpTimes--;
-            Jump();
-        }
-        if(Input.GetButtonDown("Jump") && jumpTimes > 0 && !isGround)
-        {
-            jumpTimes--;
-            Jump();
-        }
+        //charactercontroller不自带重力的移动，自带重力用simplemove
+        cc.Move(moveDir * currentSpeed * Time.deltaTime);
 
 
-        velocity.y += gravity * Time.deltaTime * fallSpeed;
-        cc.Move(velocity * Time.deltaTime);
 
-        anim.SetFloat("Speed", direction.magnitude * currentSpeed);
+
+        //anim.SetFloat("Speed", moveDir.magnitude * currentSpeed);
     }
 
+    bool isGrounded()
+    {
+        Debug.DrawLine(rayTransform.position, new Vector3(rayTransform.position.x, rayTransform.position.y - rayDis, rayTransform.position.z), Color.red, 0.1f);
+        return Physics.Raycast(rayTransform.position, Vector3.down, rayDis);
+    }
 
     private void Jump()
     {
-        anim.SetBool("Jump", true);
-        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        //anim.SetTrigger("Jump");
+        moveDir.y = jumpHeight;
     }
 
+    private void Crouch()
+    {
 
+        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            isCrouch = true;
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            isCrouch = false;
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            isCrouch = !isCrouch;
+        }
+
+        if (isCrouch)
+        {
+            cc.height = crouchHeight;
+        }
+        else
+        {
+            cc.height = originHeight;
+        }
+    }
 }
