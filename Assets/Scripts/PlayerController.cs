@@ -38,13 +38,15 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        rayTransform.localPosition = new Vector3(rayTransform.localPosition.x,-cc.height/2-0.05f,rayTransform.localPosition.z);
+
         if (isGrounded())
         {
             //获取用户输入
             float x = Input.GetAxisRaw("Horizontal");
             float z = Input.GetAxisRaw("Vertical");
             //移动的方向
-            moveDir = characterTransform.TransformDirection(new Vector3(x, 0, z));
+            moveDir = transform.right * x + transform.forward * z;
             //冲刺判定
             if (isCrouch)
             {
