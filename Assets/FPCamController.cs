@@ -7,6 +7,7 @@ public class FPCamController : MonoBehaviour
     public float mouseSpeed;
     private Vector3 camRotation;
     public Transform PlayerBody;
+    public Transform GunBody;
 
     private void Start()
     {
@@ -22,7 +23,8 @@ public class FPCamController : MonoBehaviour
         camRotation.y += temp_x;
         camRotation.x = Mathf.Clamp(camRotation.x,-90f,90f);
         //相机旋转控制上下
-        transform.localRotation = Quaternion.Euler(camRotation.x, 0, 0);
+        //transform.localRotation = Quaternion.Euler(camRotation.x, 0, 0);
+        GunBody.localRotation = Quaternion.Euler(camRotation.x, 0, 0);
         //角色旋转控制面朝方向
         PlayerBody.localRotation = Quaternion.Euler(0, camRotation.y, 0);
     }

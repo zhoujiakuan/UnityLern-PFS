@@ -6,8 +6,9 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    //private Animator anim;
+    private Animator anim;
     private CharacterController cc;
+    public Vector3 velocity;//charactercontroller的velocity
     [Header("角色模型")]
     public Transform characterTransform;
     [Header("基础控制")]
@@ -31,7 +32,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        //anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
         cc = GetComponent<CharacterController>();
         originHeight = cc.height;
     }
@@ -46,7 +47,7 @@ public class PlayerController : MonoBehaviour
             float x = Input.GetAxisRaw("Horizontal");
             float z = Input.GetAxisRaw("Vertical");
             //移动的方向
-            moveDir = transform.right * x + transform.forward * z;
+            moveDir = (transform.right * x + transform.forward * z).normalized;
             //冲刺判定
             if (isCrouch)
             {
@@ -76,11 +77,12 @@ public class PlayerController : MonoBehaviour
 
 
 
-
-        //anim.SetFloat("Speed", moveDir.magnitude * currentSpeed);
+        velocity = cc.velocity;
+        velocity.y = 0;
+        anim.SetFloat("velocity", velocity.magnitude,0.25f,Time.deltaTime);
     }
 
-    bool isGrounded()
+    public bool isGrounded()
     {
         Debug.DrawLine(rayTransform.position, new Vector3(rayTransform.position.x, rayTransform.position.y - rayDis, rayTransform.position.z), Color.red, 0.1f);
         return Physics.Raycast(rayTransform.position, Vector3.down, rayDis);
