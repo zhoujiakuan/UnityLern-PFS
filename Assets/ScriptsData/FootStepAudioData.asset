@@ -161,4 +161,4 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 7f8db19fe56fe2a459fb4b2d4e8fd382, type: 3}
     delay: 0.4
     sprintingDelay: 0.2
-    crouchDelay: 0.6
+    crouchDelay: 0.55

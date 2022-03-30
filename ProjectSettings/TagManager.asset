@@ -15,6 +15,9 @@ TagManager:
   - rock
   - snow
   - water
+  - FX
+  - Bullet
+  - FPCam
   layers:
   - Default
   - TransparentFX
@@ -24,8 +27,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Bullet
+  - Player
   - 
   - Ground
   - 
