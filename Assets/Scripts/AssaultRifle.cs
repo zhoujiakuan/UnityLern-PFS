@@ -94,7 +94,7 @@ public class AssaultRifle : Firearms
         //装子弹逻辑
         if (Input.GetMouseButtonDown(0))
         {
-            if (currentBulltMaxCount > 0)
+            if (currentBulltMaxCount > 0 && !isReloading)
             {
                 if (currentBulltCount <= 0 && currentBulltMaxCount > 0)
                 {
@@ -107,7 +107,7 @@ public class AssaultRifle : Firearms
                 }
             }
         }
-        if (Input.GetKeyDown(KeyCode.R) && currentBulltCount < clip)
+        if (Input.GetKeyDown(KeyCode.R) && currentBulltCount < clip && !isReloading)
         {
             if (currentBulltMaxCount > 0)
             {

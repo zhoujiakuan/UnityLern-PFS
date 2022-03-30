@@ -82,17 +82,16 @@ public abstract class Firearms : MonoBehaviour, IWeapon
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
         if(Physics.Raycast(ray,out RaycastHit hitInfo))
         {
-            Debug.Log("hit:"+hitInfo.collider.name);
             targetPoint = hitInfo.point;
         }
         else
         {
-            targetPoint = Camera.main.transform.forward * 1000;
+            targetPoint = Camera.main.transform.forward * 10000;
         }
 
         GameObject bullet = ObjectPoolManager.Instance.Spawn("Bullet", BulletSpawnPoint.position,BulletSpawnPoint.rotation).gameObject;
-        bullet.transform.localScale = new Vector3(0.1f,0.1f,0.25f);
         bullet.transform.LookAt(targetPoint);
+        bullet.transform.localScale = new Vector3(0.1f,0.1f,0.25f);
     }
 
 }
