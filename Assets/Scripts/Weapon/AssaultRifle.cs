@@ -12,7 +12,15 @@ public class AssaultRifle : Firearms
     protected override void Start()
     {
         base.Start();
-        fpCam = GameObject.FindWithTag("MainCamera").GetComponent<FPCamController>();
+        fpCam = GameObject.FindWithTag("FPCam").GetComponent<FPCamController>();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            Time.timeScale = 0.005f;
+        }
     }
 
     /// <summary>
@@ -71,8 +79,8 @@ public class AssaultRifle : Firearms
         //通过第一人称的相机向屏幕中间（也就是准星的方向）发射一条射线
         //如果射线碰到了物体就把目标点设为碰撞点，如果没有碰撞到就把目标点设置为摄像机前方1000米
         Vector3 targetPoint;
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        Ray ray = fisrtPersonCam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        if (Physics.Raycast(ray,out RaycastHit hitInfo))
         {
             targetPoint = hitInfo.point;
         }
@@ -80,11 +88,15 @@ public class AssaultRifle : Firearms
         {
             targetPoint = Camera.main.transform.forward * 10000;
         }
+        Debug.DrawLine(fisrtPersonCam.transform.position,targetPoint,Color.red,0.5f);
 
         GameObject bullet = ObjectPoolManager.Instance.Spawn("Bullet", BulletSpawnPoint.position, BulletSpawnPoint.rotation).gameObject;
         bullet.GetComponent<BulletBehaviour>().impactAudioData = impactAudioData;
         bullet.transform.LookAt(targetPoint);
+        Vector3 dir = targetPoint - bullet.transform.position;
+        //bullet.GetComponent<BulletBehaviour>().fly_dir = dir;
+        bullet.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
         bullet.transform.eulerAngles += CalculateSpread();
-        bullet.transform.localScale = new Vector3(0.1f, 0.1f, 0.25f);
+        bullet.GetComponent<BulletBehaviour>().AddForce();
     }
 }

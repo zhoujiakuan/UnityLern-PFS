@@ -29,8 +29,8 @@ public abstract class Firearms : MonoBehaviour, IWeapon
     public FirearmAudioData firearmAudioData;
     [Header("子弹撞击音源文件")]
     public ImpactAudioData impactAudioData;
-    [Header("瞄准的相机")]
-    public Camera eyesCam;
+    [Header("第一人称相机")]
+    public Camera fisrtPersonCam;
 
     //枪械的攻击动画
     internal protected Animator GunAnim;
@@ -49,18 +49,19 @@ public abstract class Firearms : MonoBehaviour, IWeapon
     //是否在瞄准
     protected bool isAiming;
     //子弹散射角度
-    protected float SpreadAngle = 60f;
+    [SerializeField]protected float SpreadAngle = 60f;
     //瞄准的携程
     protected IEnumerator aimEnumerator;
 
     private void Awake()
     {
         GunAnim = GetComponent<Animator>();
+        fisrtPersonCam = GameObject.FindWithTag("FPCam").GetComponent<Camera>();
     }
 
     protected virtual void Start()
     {
-        originFov = eyesCam.fieldOfView;
+        originFov = fisrtPersonCam.fieldOfView;
         currentBulltCount = clip;
         currentBulltMaxCount = MaxClip;
         aimEnumerator = DoAim();
@@ -156,9 +157,9 @@ public abstract class Firearms : MonoBehaviour, IWeapon
     protected Vector3 CalculateSpread()
     {
         //计算子弹散射的百分比
-        float temp_spreadPercent = SpreadAngle / eyesCam.fieldOfView;
+        float temp_spreadPercent = SpreadAngle / fisrtPersonCam.fieldOfView;
         //随机一下
-        return temp_spreadPercent*Random.insideUnitCircle;
+        return (Random.value>0.5f?1:-1)*temp_spreadPercent*Random.insideUnitCircle;
     }
 
     /// <summary>
@@ -171,7 +172,7 @@ public abstract class Firearms : MonoBehaviour, IWeapon
         {
             yield return null;
             float temp_fov = 0;
-            eyesCam.fieldOfView = Mathf.SmoothDamp(eyesCam.fieldOfView, isAiming ? 26 : originFov, ref temp_fov, Time.deltaTime * 5);
+            fisrtPersonCam.fieldOfView = Mathf.SmoothDamp(fisrtPersonCam.fieldOfView, isAiming ? 26 : originFov, ref temp_fov, Time.deltaTime * 5);
         }
     }
 }

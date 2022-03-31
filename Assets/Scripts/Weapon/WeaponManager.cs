@@ -4,29 +4,45 @@ using UnityEngine;
 
 public class WeaponManager : MonoBehaviour
 {
+    [Header("武器库")]
+    public List<Firearms> allWeapons;
     [Header("主武器")]
     public Firearms MainWeapon;
     [Header("副武器")]
     public Firearms SecondlyWeapon;
     [Header("当前武器")]
     [SerializeField] private Firearms CurrentWeapon;
+    [Header("拾取检测")]
+    [SerializeField] private float rayDistance;
+    [SerializeField] private LayerMask layerMask;
 
     PlayerController playerController;
     IEnumerator waitingHolster;
+    Camera pickUpCam;
 
     private void Start()
     {
+        pickUpCam = GameObject.FindWithTag("FPCam").GetComponent<Camera>();
+        if (SecondlyWeapon)
+        {
+            SecondlyWeapon.gameObject.SetActive(false);
+        }
+        playerController = FindObjectOfType<PlayerController>();
         if (MainWeapon)
         {
-            CurrentWeapon = MainWeapon;
-            playerController.SetUpAnimator(CurrentWeapon.GunAnim);
+            //CurrentWeapon = MainWeapon;
+            if (CurrentWeapon)
+            {
+                playerController.SetUpAnimator(CurrentWeapon.GunAnim);
+            }
         }
-        SecondlyWeapon.gameObject.SetActive(false);
-        playerController = FindObjectOfType<PlayerController>();
     }
 
     private void Update()
     {
+        //按E拾取武器噢
+        PickCheck();
+
         if (CurrentWeapon == null) return;
 
         SwapWeapon();
@@ -68,9 +84,10 @@ public class WeaponManager : MonoBehaviour
     /// </summary>
     private void SwapWeapon()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1) && waitingHolster == null)
         {
-            if(CurrentWeapon != MainWeapon && waitingHolster == null)
+            //如果主武器存在 并且当前武器不等于主武器的情况下执行
+            if (MainWeapon && CurrentWeapon != MainWeapon)
             {
                 //正在瞄准的时候切枪 要先取消瞄准
                 CurrentWeapon.Aim(false);
@@ -80,7 +97,8 @@ public class WeaponManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Alpha2) && waitingHolster == null)
         {
-            if (CurrentWeapon != SecondlyWeapon)
+            //如果副武器存在 并且当前武器不等于副武器的情况下执行
+            if (SecondlyWeapon && CurrentWeapon != SecondlyWeapon)
             {
                 //正在瞄准的时候切枪 要先取消瞄准
                 CurrentWeapon.Aim(false);
@@ -124,5 +142,58 @@ public class WeaponManager : MonoBehaviour
             waitingHolster = WaitingHolster(targetWeapon);
         }
         StartCoroutine(WaitingHolster(targetWeapon));
+    }
+
+    /// <summary>
+    /// 拾取武器的射线检测
+    /// </summary>
+    private void PickCheck()
+    {
+        RaycastHit hitinfo;
+        if(Physics.Raycast(pickUpCam.transform.position,pickUpCam.transform.forward,out hitinfo, rayDistance, layerMask))
+        {
+            //尝试获取一下目标有没有baseitem组件
+            if(hitinfo.collider.TryGetComponent(out BaseItem baseItem))
+            {
+                if(baseItem is FirearmsItem firearmsItem)
+                {
+                    foreach (var item in allWeapons)
+                    {
+                        //对比一下检测到的武器的名字
+                        if (firearmsItem.WeaponName.CompareTo(item.name) == 0)
+                        {
+                            if (Input.GetKeyDown(KeyCode.E))
+                            {
+                                if (firearmsItem.CurrentFirearmsType.Equals(FirearmsItem.FirearmsType.AssaultRifle))
+                                {
+                                    MainWeapon = item;
+                                }
+                                if (firearmsItem.CurrentFirearmsType.Equals(FirearmsItem.FirearmsType.HandGun))
+                                {
+                                    SecondlyWeapon = item;
+                                }
+                                SetUpWeapon(item);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void SetUpWeapon(Firearms weapon)
+    {
+        if (CurrentWeapon)
+        {
+            //如果要捡的武器和手上的一样就不返回
+            if (weapon.name.CompareTo(CurrentWeapon.name) == 0) return;
+
+            CurrentWeapon.isReloading = false;
+            CurrentWeapon.Aim(false);
+            CurrentWeapon.gameObject.SetActive(false);
+        }
+        weapon.gameObject.SetActive(true);
+        CurrentWeapon = weapon;
+        playerController.SetUpAnimator(weapon.GunAnim);
     }
 }

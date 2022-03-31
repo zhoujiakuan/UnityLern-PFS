@@ -34,7 +34,7 @@ public class FPCamController : MonoBehaviour
         //增加后坐力
         CalculateRecoilOffset();
         camRotation.x -= temp_y + currentRecoil.y;
-        camRotation.y += temp_x + (Random.value > 0.5f ? 1 : -1)*currentRecoil.x;
+        camRotation.y += temp_x + (Random.value > 0.5f ? 1 : -1) * currentRecoil.x;
 
         //相机旋转控制上下
         //transform.localRotation = Quaternion.Euler(camRotation.x, 0, 0);

@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FirearmsItem : MonoBehaviour
+public class FirearmsItem : BaseItem
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+    public enum FirearmsType 
+    { 
+        AssaultRifle,
+        HandGun,
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public FirearmsType CurrentFirearmsType;
+    public string WeaponName;
 }
