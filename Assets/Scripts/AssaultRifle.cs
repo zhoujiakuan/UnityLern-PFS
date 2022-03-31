@@ -17,6 +17,65 @@ public class AssaultRifle : Firearms
         aimEnumerator = DoAim();
         fpCam = GameObject.FindWithTag("MainCamera").GetComponent<FPCamController>();
     }
+    private void Update()
+    {
+        //射击
+        if (Input.GetMouseButtonDown(0) || Input.GetMouseButton(0))
+        {
+            DoAttack();
+        }
+
+
+        //装子弹逻辑
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (currentBulltMaxCount > 0 && !isReloading)
+            {
+                if (currentBulltCount <= 0 && currentBulltMaxCount > 0)
+                {
+                    isAiming = false;
+                    GunAnim.SetBool("Aim", isAiming);
+                    GunAnim.Play("ReloadOut", 0);
+                    reloadAudioSource.clip = firearmAudioData.reloadoutAudio;
+                    reloadAudioSource.Play();
+                    isReloading = true;
+                }
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.R) && currentBulltCount < clip && !isReloading)
+        {
+            if (currentBulltMaxCount > 0)
+            {
+                isAiming = false;
+                GunAnim.SetBool("Aim", isAiming);
+                if (currentBulltCount != 0)
+                {
+                    GunAnim.Play("Reload", 0);
+                }
+                else
+                {
+                    GunAnim.Play("ReloadOut", 0);
+                }
+                reloadAudioSource.clip = firearmAudioData.reloadAudio;
+                reloadAudioSource.Play();
+                isReloading = true;
+            }
+        }
+
+        //瞄准逻辑
+        if (Input.GetMouseButtonDown(1) && !isReloading)
+        {
+            isAiming = true;
+            //瞄准
+            Aim();
+        }
+        if (Input.GetMouseButtonUp(1))
+        {
+            isAiming = false;
+            //取消瞄准
+            Aim();
+        }
+    }
 
     protected override void Aim()
     {
@@ -85,66 +144,7 @@ public class AssaultRifle : Firearms
         }
     }
 
-    private void Update()
-    {
-        //射击
-        if (Input.GetMouseButtonDown(0) || Input.GetMouseButton(0))
-        {
-            DoAttack();
-        }
-
-
-        //装子弹逻辑
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (currentBulltMaxCount > 0 && !isReloading)
-            {
-                if (currentBulltCount <= 0 && currentBulltMaxCount > 0)
-                {
-                    isAiming = false;
-                    GunAnim.SetBool("Aim", isAiming);
-                    GunAnim.Play("ReloadOut",0);
-                    reloadAudioSource.clip = firearmAudioData.reloadoutAudio;
-                    reloadAudioSource.Play();
-                    isReloading = true;
-                }
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.R) && currentBulltCount < clip && !isReloading)
-        {
-            if (currentBulltMaxCount > 0)
-            {
-                isAiming = false;
-                GunAnim.SetBool("Aim", isAiming);
-                if (currentBulltCount!=0)
-                {
-                    GunAnim.Play("Reload",0);
-                }
-                else
-                {
-                    GunAnim.Play("ReloadOut",0);
-                }
-                reloadAudioSource.clip = firearmAudioData.reloadAudio;
-                reloadAudioSource.Play();
-                isReloading = true;
-            }
-        }
-
-        //瞄准逻辑
-        if (Input.GetMouseButtonDown(1) && !isReloading)
-        {
-            isAiming = true;
-            //瞄准
-            Aim();
-        }
-        if (Input.GetMouseButtonUp(1))
-        {
-            isAiming = false;
-            //取消瞄准
-            Aim();
-        }
-    }
-
+   
     /// <summary>
     /// 瞄准后调整相机的FOV值
     /// </summary>
@@ -157,5 +157,27 @@ public class AssaultRifle : Firearms
             float temp_fov = 0;
             eyesCam.fieldOfView = Mathf.SmoothDamp(eyesCam.fieldOfView,isAiming?26:originFov,ref temp_fov,Time.deltaTime*5);
         }
+    }
+
+    private void CreateBullte()
+    {
+        //通过第一人称的相机向屏幕中间（也就是准星的方向）发射一条射线
+        //如果射线碰到了物体就把目标点设为碰撞点，如果没有碰撞到就把目标点设置为摄像机前方1000米
+        Vector3 targetPoint;
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        {
+            targetPoint = hitInfo.point;
+        }
+        else
+        {
+            targetPoint = Camera.main.transform.forward * 10000;
+        }
+
+        GameObject bullet = ObjectPoolManager.Instance.Spawn("Bullet", BulletSpawnPoint.position, BulletSpawnPoint.rotation).gameObject;
+        bullet.GetComponent<BulletBehaviour>().impactAudioData = impactAudioData;
+        bullet.transform.LookAt(targetPoint);
+        bullet.transform.eulerAngles += CalculateSpread();
+        bullet.transform.localScale = new Vector3(0.1f, 0.1f, 0.25f);
     }
 }

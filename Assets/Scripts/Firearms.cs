@@ -46,6 +46,8 @@ public abstract class Firearms : MonoBehaviour, IWeapon
     protected float originFov;
     //是否在瞄准
     protected bool isAiming;
+    //子弹散射角度
+    protected float SpreadAngle = 60f;
 
     protected virtual void Start()
     {
@@ -53,7 +55,6 @@ public abstract class Firearms : MonoBehaviour, IWeapon
         originFov = eyesCam.fieldOfView;
         currentBulltCount = clip;
         currentBulltMaxCount = MaxClip;
-
     }
 
     //射击的方法
@@ -70,31 +71,24 @@ public abstract class Firearms : MonoBehaviour, IWeapon
         Shooting();
     }
 
-    //根据枪械的射速来判断是否可以开枪
+    /// <summary>
+    /// 根据枪械的射速来判断是否可以开枪
+    /// </summary>
+    /// <returns></returns>
     protected bool isAllowedShooting()
     {
         return Time.time - lastFireTime > 1/fireRate;
     }
 
-    protected void CreateBullte()
+    /// <summary>
+    /// 计算子弹的散射
+    /// </summary>
+    protected Vector3 CalculateSpread()
     {
-        //通过第一人称的相机向屏幕中间（也就是准星的方向）发射一条射线
-        //如果射线碰到了物体就把目标点设为碰撞点，如果没有碰撞到就把目标点设置为摄像机前方1000米
-        Vector3 targetPoint;
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        if(Physics.Raycast(ray,out RaycastHit hitInfo))
-        {
-            targetPoint = hitInfo.point;
-        }
-        else
-        {
-            targetPoint = Camera.main.transform.forward * 10000;
-        }
-
-        GameObject bullet = ObjectPoolManager.Instance.Spawn("Bullet", BulletSpawnPoint.position,BulletSpawnPoint.rotation).gameObject;
-        bullet.GetComponent<BulletBehaviour>().impactAudioData = impactAudioData;
-        bullet.transform.LookAt(targetPoint);
-        bullet.transform.localScale = new Vector3(0.1f,0.1f,0.25f);
+        //计算子弹散射的百分比
+        float temp_spreadPercent = SpreadAngle / eyesCam.fieldOfView;
+        //随机一下
+        return temp_spreadPercent*Random.insideUnitCircle;
     }
 
 }
