@@ -27,6 +27,8 @@ public abstract class Firearms : MonoBehaviour, IWeapon
     public AudioSource reloadAudioSource;
     [Header("步枪音源文件")]
     public FirearmAudioData firearmAudioData;
+    [Header("子弹撞击音源文件")]
+    public ImpactAudioData impactAudioData;
     [Header("瞄准的相机")]
     public Camera eyesCam;
 
@@ -90,6 +92,7 @@ public abstract class Firearms : MonoBehaviour, IWeapon
         }
 
         GameObject bullet = ObjectPoolManager.Instance.Spawn("Bullet", BulletSpawnPoint.position,BulletSpawnPoint.rotation).gameObject;
+        bullet.GetComponent<BulletBehaviour>().impactAudioData = impactAudioData;
         bullet.transform.LookAt(targetPoint);
         bullet.transform.localScale = new Vector3(0.1f,0.1f,0.25f);
     }

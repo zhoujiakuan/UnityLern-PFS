@@ -5,12 +5,13 @@ using UnityEngine;
 public class BulletBehaviour : MonoBehaviour
 {
     public float bulletSpeed;
-    //子弹击中后的效果
-    public GameObject impactPrefab;
+    public GameObject impactPrefab;//子弹击中后的效果
+    public ImpactAudioData impactAudioData;
     Rigidbody rb;
     TrailRenderer trailRenderer;
     Collider coll;
-    Vector3 oriPos;
+    Vector3 oriPos;//子弹的上一帧位置
+    Transform impactParent;
 
     private void Awake()
     {
@@ -23,6 +24,7 @@ public class BulletBehaviour : MonoBehaviour
     private void Start()
     {
         oriPos = transform.position;
+        impactParent = GameObject.Find("ImpactParent").transform;
     }
 
     private void Update()
@@ -45,8 +47,21 @@ public class BulletBehaviour : MonoBehaviour
         if (isCollider)
         {
             Debug.Log(hitinfo.collider.name);
-            GameObject bulletEffect = Instantiate(impactPrefab,hitinfo.point,Quaternion.LookRotation(hitinfo.normal,Vector3.up));
+            GameObject bulletEffect = Instantiate(impactPrefab, hitinfo.point, Quaternion.LookRotation(hitinfo.normal, Vector3.up));
+            //播放子弹撞击的声音
+            foreach (var audio in impactAudioData.ImpactAudios)
+            {
+                if (hitinfo.collider.CompareTag(audio.tag))
+                {
+                    AudioClip audioClip = audio.AudioClips[Random.Range(0, audio.AudioClips.Count)];
+                    AudioSource.PlayClipAtPoint(audioClip,hitinfo.point);
+                }
+            }
+            //设置一下父物体 不然窗口太乱
+            bulletEffect.transform.SetParent(impactParent);
+            //3秒后销毁效果
             Destroy(bulletEffect,3f);
+            //回收子弹
             ObjectPoolManager.Instance.DeSpawn(gameObject);
         }
 

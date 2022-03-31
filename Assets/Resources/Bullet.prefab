@@ -171,6 +171,7 @@ MonoBehaviour:
   bulletSpeed: 50
   impactPrefab: {fileID: 1879272669879180, guid: 75b24d93631c6b949bca94153bdb3f89,
     type: 3}
+  impactParent: {fileID: 0}
 --- !u!1 &1247252435221899828
 GameObject:
   m_ObjectHideFlags: 0

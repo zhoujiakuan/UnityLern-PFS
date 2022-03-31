@@ -9,11 +9,13 @@ public class AssaultRifle : Firearms
 {
     bool isReloading;
     IEnumerator aimEnumerator;
+    FPCamController fpCam;
 
     protected override void Start()
     {
         base.Start();
         aimEnumerator = DoAim();
+        fpCam = GameObject.FindWithTag("MainCamera").GetComponent<FPCamController>();
     }
 
     protected override void Aim()
@@ -65,6 +67,7 @@ public class AssaultRifle : Firearms
         if (isAllowedShooting())
         {
             CreateBullte();
+            fpCam.FireRecoil();
             if (isAiming)
             {
                 GunAnim.Play("AimFire");
