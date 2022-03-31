@@ -89,8 +89,8 @@ MonoBehaviour:
     - {fileID: 8300000, guid: ce6412b62892baa49b5c48bee41ed559, type: 3}
     - {fileID: 8300000, guid: 974765112c9d38442a3cd16dba4b4053, type: 3}
     delay: 0.4
-    sprintingDelay: 0
-    crouchDelay: 0
+    sprintingDelay: 0.3
+    crouchDelay: 0.5
   - tag: metal
     AudioClips:
     - {fileID: 8300000, guid: 1c8bccea2544d1e46aee29dff75e514a, type: 3}
@@ -106,8 +106,8 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 25e5a565b93b92143a68a682e6e2ee77, type: 3}
     - {fileID: 8300000, guid: 65a448bc76f4b784ba8e2ed8929d5818, type: 3}
     delay: 0.4
-    sprintingDelay: 0
-    crouchDelay: 0
+    sprintingDelay: 0.3
+    crouchDelay: 0.5
   - tag: rock
     AudioClips:
     - {fileID: 8300000, guid: 9664befccbc5ca4489872dd49225a048, type: 3}

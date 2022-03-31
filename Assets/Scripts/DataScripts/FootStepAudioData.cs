@@ -18,6 +18,6 @@ public class FootStepAudio
     public List<AudioClip> AudioClips = new List<AudioClip>();
     //声音的延迟
     public float delay = 0.4f;
-    public float sprintingDelay;
-    public float crouchDelay;
+    public float sprintingDelay = 0.3f;
+    public float crouchDelay = 0.5f;
 }
